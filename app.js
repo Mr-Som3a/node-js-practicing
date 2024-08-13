@@ -2,6 +2,7 @@ const express= require('express')
 const app = express()
 const courses = require('./courses')
 const validate = require('./validation')
+const { syncIndexes } = require('mongoose')
 
 app.use(express.json())
 
@@ -37,18 +38,27 @@ app.post('/api/courses',(req,res)=>{
 })
 
 app.put('/api/courses/',(req,res)=>{
+    const index = req.body.id
+    if(!index) return res.status(400).send('should include an id')
     const course = courses.find(c=>c.id === parseInt(req.body.id))
-    if(!course) return res.status(404).send("this object is not found")
-    course.course=req.body.course;
-    res.send(courses)
+    if(!course){ return res.status(404).send("this object is not found")}
     
+    const result = validate(course)
+    if (!result.error){
+        course.course=req.body.course;
+        res.send(courses)
+    }
+    else{
+        res.status(400).send(result.error.details[0].message)
+    }
+
 
 })
 
 
 app.delete('/api/courses/:id',(req,res)=>{
     const course = courses.find(c=>c.id===parseInt( req.params.id ));
-    if (!course) return res.status(404).send('404 not found')
+    if (!course) return res.status(404).send('this object is not found')
 
     //delete
     const index = courses.indexOf(course)

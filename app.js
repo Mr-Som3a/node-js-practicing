@@ -1,6 +1,7 @@
 const express= require('express')
 const app = express()
 const courses = require('./courses')
+const validate = require('./validation')
 
 app.use(express.json())
 
@@ -21,22 +22,28 @@ app.get('/api/courses/:id',(req,res)=>{
 
 app.post('/api/courses',(req,res)=>{
     const course= {
-        id:courses.length+1,
-        name:req.body.name
+        id:req.body.id,
+        course:req.body.course
     }
-    courses.push(course)
-    res.send(courses)
+    const result = validate(course)
+    if (!result.error){
+        courses.push(course)
+        res.send(courses)
+    }
+    else{
+        res.send(result.error.details[0].message)
+    }
+    
 })
 
-// app.put('/api/courses/',(req,res)=>{
-//     const course= {
-//         id:req.body.id,
-//         name:req.body.name
-//     }
-//     const index = course.id;
-//     courses.map(c=>c.id===)
+app.put('/api/courses/',(req,res)=>{
+    const course = courses.find(c=>c.id === parseInt(req.body.id))
+    if(!course) return res.status(404).send("this object is not found")
+    course.course=req.body.course;
+    res.send(courses)
+    
 
-// })
+})
 
 
 app.delete('/api/courses/:id',(req,res)=>{
@@ -45,7 +52,7 @@ app.delete('/api/courses/:id',(req,res)=>{
 
     //delete
     const index = courses.indexOf(course)
-    courses.splice(index,2)
+    courses.splice(index,1)
     res.send(courses)
     
 })

@@ -4,12 +4,9 @@ const schema = Joi.object({
     course:Joi.string().min(2).required("must enter a course name")
 })
 
-// console.log(
-//     schema.validate({course:'k'})
-// )
+
 function validation(item){
-    return schema.validate(item)
-     
+    return schema.validate(item)     
 }
 
 module.exports=validation
